@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -20,8 +21,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
-
     @Autowired
     public AuthController(AuthService authService) {
         this.authService = authService;
@@ -30,12 +29,18 @@ public class AuthController {
     public final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup( @Valid @RequestBody Users users) {
+    public ResponseEntity<?> signup(@Valid @RequestBody Users users) {
 
+        if (users.getPassword() == null) {
+            System.out.println("BREACHED IS NULL");
+            throw new PasswordLengthException();
+        }
         if (users.getPassword().length() < 12) {
+            System.out.println("BREACHED IS NOT GREATER THAN 12");
             throw new PasswordLengthException();
         }
         if (Utils.breachedPassword.contains(users.getPassword())) {
+            System.out.println("BREACHED PASSWORD");
             throw new BreachedPasswordException();
         }
 
@@ -48,12 +53,8 @@ public class AuthController {
     }
 
     @PostMapping("/changepass")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body) {
         String newPassword = body.get("new_password");
-        authService.changePassword(newPassword);
-        Map<String, String> response = new LinkedHashMap<>();
-        response.put("email", user.getUsername());
-        response.put("status", "The password has been updated successfully");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.changePassword(newPassword));
     }
 }

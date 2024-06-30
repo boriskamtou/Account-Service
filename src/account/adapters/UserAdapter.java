@@ -1,11 +1,15 @@
 package account.adapters;
 
 
+import account.entities.Group;
 import account.entities.Users;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 public class UserAdapter implements UserDetails {
     private final Users user;
@@ -16,6 +20,13 @@ public class UserAdapter implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (user != null) {
+            Collection<GrantedAuthority> authorities = new ArrayList<>(user.getGroups().size());
+            for (Group userGroup : user.getGroups()) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + userGroup.getGroupName().toUpperCase()));
+            }
+            return authorities;
+        }
         return null;
     }
 
@@ -40,7 +51,7 @@ public class UserAdapter implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.isActive();
     }
 
     @Override

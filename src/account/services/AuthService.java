@@ -1,12 +1,15 @@
 package account.services;
 
 import account.entities.Users;
+import account.utils.ChangePasswordSuccess;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public interface AuthService {
     Users signup(Users users);
-    void changePassword(String newPassword);
+    ChangePasswordSuccess changePassword(String newPassword);
+
+    Users findUsersByEmail(String email);
+    void increaseFailedAttempts(Users user);
+    void resetFailedAttempts(String email);
 }
